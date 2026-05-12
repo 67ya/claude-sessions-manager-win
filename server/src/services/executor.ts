@@ -85,7 +85,7 @@ async function changeTitleViaMcp(customName: string, baselinePorts: Set<string>)
           setTimeout(() => ac.abort(), 2000);
           const res = await fetch(`http://127.0.0.1:${port}/mcp`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "Accept": "application/json, text/event-stream" },
             body: JSON.stringify({
               jsonrpc: "2.0",
               method: "tools/call",
