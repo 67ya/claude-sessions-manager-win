@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { connectNode } from "./ssh";
 import { getNode } from "./nodes";
+import { CLAUDE_DIR } from "../config";
 
 export interface DeployJob {
   id: string;
@@ -238,7 +239,7 @@ function appendLog(jobId: string, text: string) {
   jobEvents.get(jobId)?.emit("log", text);
 }
 
-const DEPLOY_LOG_DIR = "/home/ctyun/.claude/deploy-logs";
+const DEPLOY_LOG_DIR = path.join(CLAUDE_DIR, "deploy-logs");
 
 function persistJob(job: DeployJob) {
   try {

@@ -2,14 +2,18 @@ import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
 import type { SessionInfo, SessionMeta, SessionsMetadata, ApiConfig } from "../types";
-
-const SESSIONS_DIR = "/home/ctyun/.claude/projects/-home-ctyun";
-const METADATA_PATH = "/home/ctyun/.claude/sessions-metadata.json";
-const USERS_PATH = "/home/ctyun/.claude/claude-users.json";
-const SETTINGS_PATH = "/home/ctyun/.claude/settings.json";
-const CREDENTIALS_PATH = "/home/ctyun/.claude/.credentials.json";
-const CLAUDE_JSON_PATH = "/home/ctyun/.claude.json";
-const PROFILES_DIR = "/home/ctyun/.claude-profiles";
+import {
+  SESSIONS_DIR,
+  METADATA_PATH,
+  USERS_PATH,
+  SETTINGS_PATH,
+  CREDENTIALS_PATH,
+  CLAUDE_JSON_PATH,
+  PROFILES_DIR,
+  CLAUDE_DIR,
+  HOME_DIR,
+  IS_WINDOWS,
+} from "../config";
 
 function loadMetadata(): SessionsMetadata {
   try {
@@ -437,7 +441,7 @@ export function compressSession(id: string, keepLast = 100): CompressResult | nu
 
   // Find a real user message to use as field template for the summary
   let template: any = {
-    cwd: "/home/ctyun",
+    cwd: HOME_DIR,
     entrypoint: "claude",
     gitBranch: "",
     isSidechain: false,
@@ -452,7 +456,7 @@ export function compressSession(id: string, keepLast = 100): CompressResult | nu
     const obj = parsed[i].obj;
     if (obj?.type === "user" && obj?.message?.content && typeof obj.message.content === "string" && !obj.uuid?.startsWith("compress-")) {
       template = {
-        cwd: obj.cwd || "/home/ctyun",
+        cwd: obj.cwd || HOME_DIR,
         entrypoint: obj.entrypoint || "claude",
         gitBranch: obj.gitBranch || "",
         isSidechain: false,
@@ -545,7 +549,6 @@ export function compressSession(id: string, keepLast = 100): CompressResult | nu
   return result;
 }
 
-const API_CONFIGS_PATH = "/home/ctyun/.claude-api-configs.json";
 const DEEPSEEK_DEFAULT_URL = "https://api.deepseek.com/v1/chat/completions";
 const DEEPSEEK_DEFAULT_MODEL = "deepseek-v4-pro";
 
@@ -976,7 +979,7 @@ export async function aiCompressSession(id: string, keepLast = 100, stripThinkin
 
   // Get template fields from a real message
   let template: any = {
-    cwd: "/home/ctyun",
+    cwd: HOME_DIR,
     entrypoint: "claude",
     gitBranch: "",
     isSidechain: false,
@@ -990,7 +993,7 @@ export async function aiCompressSession(id: string, keepLast = 100, stripThinkin
     const obj = parsed[i].obj;
     if (obj?.type === "user" && obj?.message?.content && typeof obj.message.content === "string" && !obj.uuid?.startsWith("compress-")) {
       template = {
-        cwd: obj.cwd || "/home/ctyun",
+        cwd: obj.cwd || HOME_DIR,
         entrypoint: obj.entrypoint || "claude",
         gitBranch: obj.gitBranch || "",
         isSidechain: false,
@@ -1353,7 +1356,7 @@ export function forceUnstickSession(sessionId: string): boolean {
   const marker = {
     type: "system",
     timestamp: new Date().toISOString(),
-    cwd: "/home/ctyun",
+    cwd: HOME_DIR,
     sessionId,
     message: {
       role: "assistant",
@@ -1584,7 +1587,7 @@ export function switchSessionProvider(id: string, toMode: "api" | "subscription"
   const marker = {
     type: "system",
     timestamp: new Date().toISOString(),
-    cwd: "/home/ctyun",
+    cwd: HOME_DIR,
     sessionId: id,
     message: {
       role: "system",
@@ -1729,7 +1732,7 @@ function compressActiveSessionsBackground(
   }, 500);
 }
 
-const REAL_CLAUDE_DIR = "/home/ctyun/.claude";
+const REAL_CLAUDE_DIR = CLAUDE_DIR;
 
 /**
  * Create an isolated temporary HOME directory for a session launch.
@@ -1831,5 +1834,5 @@ export function createSessionHome(sessionId: string): string {
   const tempHome = `/tmp/claude-sess-${sessionId}`;
   // Clean up stale temp homes but don't create new ones
   try { fs.rmSync(tempHome, { recursive: true, force: true }); } catch {}
-  return "/home/ctyun";
+  return HOME_DIR;
 }

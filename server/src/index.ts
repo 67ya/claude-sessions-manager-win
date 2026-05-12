@@ -42,7 +42,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Serve static frontend in production
-const clientDist = "/home/ctyun/apps/claude-sessions-manager/client/dist";
+const clientDist = path.join(__dirname, "..", "..", "..", "client", "dist");
 if (fs.existsSync(path.join(clientDist, "index.html"))) {
   app.use(express.static(clientDist));
   app.get("*", (_req, res) => {

@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import * as fs from "fs";
+import * as path from "path";
 import { execSync } from "child_process";
+import { CLAUDE_DIR, SESSIONS_DIR, METADATA_PATH } from "../config";
 
 const router = Router();
 
@@ -8,7 +10,7 @@ const router = Router();
 const GITHUB_USER = process.env.GITHUB_USER || "67ya";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const GITHUB_REPO = "67ya/claude-sessions-backup";
-const GIT_DIR = "/home/ctyun/.claude/github-sync-repo";
+const GIT_DIR = path.join(CLAUDE_DIR, "github-sync-repo");
 const REMOTE_URL = `https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_REPO}.git`;
 
 function ensureGitRepo() {
@@ -57,7 +59,7 @@ router.post("/sync", (req: Request, res: Response) => {
 
   ensureGitRepo();
 
-  const SESSIONS_DIR = "/home/ctyun/.claude/projects/-home-ctyun";
+  const SESSIONS_DIR = SESSIONS_DIR;
 
   // Reset git state to avoid merge conflicts on force push
   try {
@@ -73,7 +75,7 @@ router.post("/sync", (req: Request, res: Response) => {
   }
 
   // Copy metadata
-  const metaPath = "/home/ctyun/.claude/sessions-metadata.json";
+  const metaPath = METADATA_PATH;
   if (fs.existsSync(metaPath)) {
     fs.copyFileSync(metaPath, `${GIT_DIR}/sessions-metadata.json`);
   }

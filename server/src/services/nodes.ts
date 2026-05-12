@@ -1,8 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
 import type { ManagedNode, NodesStore } from "../types";
+import { CLAUDE_DIR } from "../config";
 
-const NODES_PATH = "/home/ctyun/.claude/nodes.json";
+const NODES_PATH = path.join(CLAUDE_DIR, "nodes.json");
 
 function loadStore(): NodesStore {
   try {

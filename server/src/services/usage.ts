@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import type { UsageSummary } from "../types";
-
-const CLAUDE_JSON_PATH = "/home/ctyun/.claude.json";
-const CREDENTIALS_PATH = "/home/ctyun/.claude/.credentials.json";
+import { CLAUDE_JSON_PATH, CREDENTIALS_PATH } from "../config";
 const OAUTH_USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
 const OAUTH_BETA_HEADER = "oauth-2025-04-20";
 

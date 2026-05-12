@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { CLAUDE_DIR } from "../config";
 
 export interface DeployPreset {
   id: string;
@@ -15,7 +16,7 @@ interface PresetsStore {
   presets: DeployPreset[];
 }
 
-const PRESETS_PATH = "/home/ctyun/.claude/deploy-presets.json";
+const PRESETS_PATH = path.join(CLAUDE_DIR, "deploy-presets.json");
 
 function load(): PresetsStore {
   try {

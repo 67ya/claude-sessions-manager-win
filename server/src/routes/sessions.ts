@@ -17,6 +17,7 @@ import {
   forceUnstickSession,
 } from "../services/sessions";
 import { getResumeCommand, resumeSession, restartAllSessions } from "../services/executor";
+import { SETTINGS_PATH, USERS_PATH, CREDENTIALS_PATH } from "../config";
 
 const router = Router();
 
@@ -36,7 +37,7 @@ router.get("/", (req: Request, res: Response) => {
 router.get("/mode", (_req: Request, res: Response) => {
   try {
     const settings = JSON.parse(
-      require("fs").readFileSync("/home/ctyun/.claude/settings.json", "utf-8")
+      require("fs").readFileSync(SETTINGS_PATH, "utf-8")
     );
     const hasApiEnv = !!(settings.env?.ANTHROPIC_BASE_URL && settings.env?.ANTHROPIC_AUTH_TOKEN);
     const isApi = hasApiEnv && (!settings.env?.ANTHROPIC_MODEL || settings.env?.ANTHROPIC_MODEL?.startsWith("deepseek"));
@@ -47,10 +48,10 @@ router.get("/mode", (_req: Request, res: Response) => {
     if (!hasApiEnv) {
       try {
         const users = JSON.parse(
-          require("fs").readFileSync("/home/ctyun/.claude/claude-users.json", "utf-8")
+          require("fs").readFileSync(USERS_PATH, "utf-8")
         );
         if (users.activeMode === "subscription") {
-          const credsExist = require("fs").existsSync("/home/ctyun/.claude/.credentials.json");
+          const credsExist = require("fs").existsSync(CREDENTIALS_PATH);
           isSub = credsExist;
         }
       } catch {}

@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import * as fs from "fs";
 import * as path from "path";
 import { createDeployJob, getJob, getAllJobs, getJobEmitter } from "../services/deploy";
+import { CLAUDE_DIR } from "../config";
 import {
   getAllPresets,
   addPreset,
@@ -88,7 +89,7 @@ router.post("/", (req: Request, res: Response) => {
 router.get("/logs", (req: Request, res: Response) => {
   const days = parseInt(req.query.days as string) || 30;
   try {
-    const dir = "/home/ctyun/.claude/deploy-logs";
+    const dir = path.join(CLAUDE_DIR, "deploy-logs");
     const files: Array<{ jobId: string; createdAt: string; nodeName: string; status: string; repoUrl: string }> = [];
     if (fs.existsSync(dir)) {
       const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
@@ -117,7 +118,7 @@ router.get("/logs", (req: Request, res: Response) => {
 
 router.get("/logs/:jobId", (req: Request, res: Response) => {
   try {
-    const filePath = path.join("/home/ctyun/.claude/deploy-logs", `${req.params.jobId}.json`);
+    const filePath = path.join(path.join(CLAUDE_DIR, "deploy-logs"), `${req.params.jobId}.json`);
     if (fs.existsSync(filePath)) {
       return res.json(JSON.parse(fs.readFileSync(filePath, "utf-8")));
     }

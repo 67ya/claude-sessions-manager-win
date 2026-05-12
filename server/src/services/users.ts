@@ -2,12 +2,13 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 import type { ClaudeUser, ApiConfig } from "../types";
-
-const USERS_PATH = "/home/ctyun/.claude/claude-users.json";
-const PROFILES_DIR = "/home/ctyun/.claude-profiles";
-const SETTINGS_PATH = "/home/ctyun/.claude/settings.json";
-const CREDENTIALS_PATH = "/home/ctyun/.claude/.credentials.json";
-const CLAUDE_JSON_PATH = "/home/ctyun/.claude.json";
+import {
+  USERS_PATH,
+  PROFILES_DIR,
+  SETTINGS_PATH,
+  CREDENTIALS_PATH,
+  CLAUDE_JSON_PATH,
+} from "../config";
 
 // OAuth constants (same as claude-switcher)
 const OAUTH_CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e";
