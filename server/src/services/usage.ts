@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import type { UsageSummary } from "../types";
-import { CLAUDE_JSON_PATH, CREDENTIALS_PATH } from "../config";
+import { CLAUDE_JSON_PATH, CREDENTIALS_PATH, USERS_PATH } from "../config";
 const OAUTH_USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
 const OAUTH_BETA_HEADER = "oauth-2025-04-20";
 
@@ -61,8 +61,21 @@ export async function getUsageSummary(): Promise<UsageSummary> {
   const oauth = cred?.claudeAiOauth ?? {};
   const { expiresAt, expiresIn } = getTokenInfo(oauth);
 
-  const email = oauth?.emailAddress || cj?.oauthAccount?.emailAddress || null;
+  let email: string | null = cj?.oauthAccount?.emailAddress || null;
   const subscriptionType = oauth?.subscriptionType || cj?.oauthAccount?.billingType?.replace("_subscription", "") || null;
+
+  // Fallback to claude-users.json active profile metadata when claude.json is missing
+  if (!email) {
+    try {
+      if (fs.existsSync(USERS_PATH)) {
+        const usersStore = JSON.parse(fs.readFileSync(USERS_PATH, "utf-8"));
+        const activeProfile = usersStore?.activeProfile;
+        if (activeProfile && usersStore?.profiles?.[activeProfile]) {
+          email = usersStore.profiles[activeProfile].email || null;
+        }
+      }
+    } catch {}
+  }
 
   let fiveHour: UsageSummary["fiveHour"] = null;
   let sevenDay: UsageSummary["sevenDay"] = null;

@@ -31,6 +31,8 @@ const OAUTH_SCOPES = [
 interface ProfileMeta {
   tags: string[];
   label?: string;
+  email?: string;
+  displayName?: string;
 }
 
 interface UsersStore {
@@ -139,10 +141,25 @@ export function getCurrentActiveUser(): { email: string | null; subscriptionType
   const acct = cj.oauthAccount || {};
   const creds = readJson(CREDENTIALS_PATH);
   const oauth = creds.claudeAiOauth || creds;
+
+  let email: string | null = acct.emailAddress || null;
+  let displayName: string | null = acct.displayName || null;
+
+  // Fallback to claude-users.json active profile metadata when claude.json is missing
+  if (!email) {
+    const store = loadUsersStore();
+    const activeProfile = store.activeProfile;
+    if (activeProfile && store.profiles[activeProfile]) {
+      const meta = store.profiles[activeProfile];
+      email = meta.email || null;
+      displayName = meta.displayName || null;
+    }
+  }
+
   return {
-    email: acct.emailAddress || null,
+    email,
     subscriptionType: oauth.subscriptionType || null,
-    displayName: acct.displayName || null,
+    displayName,
   };
 }
 
@@ -437,6 +454,15 @@ function writeTokensToCurrent(tokenResp: any, profile: any): void {
     organizationName: org.name,
   };
   writeJson(CLAUDE_JSON_PATH, cj);
+
+  // Mirror email/displayName to claude-users.json active profile metadata (backup for when claude.json gets deleted)
+  const store = loadUsersStore();
+  const activeProfile = store.activeProfile;
+  if (activeProfile && store.profiles[activeProfile]) {
+    store.profiles[activeProfile].email = account.email_address || account.email;
+    store.profiles[activeProfile].displayName = account.display_name;
+    saveUsersStore(store);
+  }
 }
 
 function writeTokensToProfile(tokenResp: any, profile: any, name: string): void {
@@ -487,12 +513,14 @@ function writeTokensToProfile(tokenResp: any, profile: any, name: string): void 
     },
   });
 
-  // Ensure metadata exists
+  // Ensure metadata exists with email/displayName
   const store = loadUsersStore();
   if (!store.profiles[name]) {
     store.profiles[name] = { tags: [] };
-    saveUsersStore(store);
   }
+  store.profiles[name].email = account.email_address || account.email;
+  store.profiles[name].displayName = account.display_name;
+  saveUsersStore(store);
 }
 
 export function getLoginState(): LoginState {

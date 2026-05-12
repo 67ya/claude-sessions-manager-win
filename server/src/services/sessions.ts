@@ -13,6 +13,7 @@ import {
   CLAUDE_DIR,
   HOME_DIR,
   IS_WINDOWS,
+  API_CONFIGS_PATH,
 } from "../config";
 
 function loadMetadata(): SessionsMetadata {
@@ -1413,6 +1414,22 @@ export function switchGlobalMode(toMode: "api" | "subscription"): string[] | nul
     settings.env.ANTHROPIC_MODEL = model;
     settings.env.API_TIMEOUT_MS = "3000000";
     writeJson(SETTINGS_PATH, settings);
+
+    // Save email/displayName to claude-users.json profile metadata before destroying claude.json
+    try {
+      const cj = readJson(CLAUDE_JSON_PATH);
+      const acct = cj?.oauthAccount || {};
+      if (acct.emailAddress && usersStore?.activeProfile) {
+        if (!usersStore.profiles) usersStore.profiles = {};
+        if (!usersStore.profiles[usersStore.activeProfile]) {
+          usersStore.profiles[usersStore.activeProfile] = { tags: [] };
+        }
+        usersStore.profiles[usersStore.activeProfile].email = acct.emailAddress;
+        usersStore.profiles[usersStore.activeProfile].displayName = acct.displayName || undefined;
+        writeJson(USERS_PATH, usersStore);
+      }
+    } catch {}
+
     try { fs.unlinkSync(CREDENTIALS_PATH); } catch {}
     try { fs.unlinkSync(CLAUDE_JSON_PATH); } catch {}
   } else {
